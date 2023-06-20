@@ -1,15 +1,15 @@
 # Discord bot v14 JS
 
 ### Commands
-**/ping**
+- **/ping**
 : Check ping
-**/pg [keyword]**
+- **/pg [keyword]**
 : Random porn gifs on requested keyword
-**/歐洛拉**
+- **/歐洛拉**
 : 愛是一尬廣 如疵沒廟
-**/csgo**
+- **/csgo**
 : Ping specific global elite player in the server
-**/hltv**
+- **/hltv**
 : Show upcoming ten matches with a rating of 1 star or above
 
 ### Reference 
