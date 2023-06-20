@@ -1,4 +1,4 @@
-#Discord bot v14 JS
+# Discord bot v14 JS
 
 ###Commands
 /ping - Check ping
