@@ -1,6 +1,7 @@
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, messageLink } = require('discord.js');
 const { clientId, guildId, token } = require('./token.json');
 const request = require('request-promise');
+const moment = require('moment-timezone');
 const cheerio = require('cheerio');
 require('dotenv').config();
 
@@ -19,11 +20,11 @@ client.once('ready', () => {
     client.user.setPresence({ activities: [{ name: '丁丁' }], status: 'dnd' })
 });
 
+//slash command
 client.on('interactionCreate', async interaction => {
     if (!interaction.isChatInputCommand()) return;
-    //main
     switch (interaction.commandName) {
-        case "ping":
+        case 'ping':
             var msg = await interaction.reply({
                 content: "......",
                 fetchReply: true
@@ -32,7 +33,7 @@ client.on('interactionCreate', async interaction => {
             const ping = msg.createdTimestamp - interaction.createdTimestamp;
             interaction.editReply(`bot delay: ${ping} ms\napi delay: ${client.ws.ping} ms`);
             break;
-        case "pg":
+        case 'pg':
             var msg = await interaction.reply({
                 content: "......",
                 fetchReply: true
@@ -51,8 +52,97 @@ client.on('interactionCreate', async interaction => {
                 }
             });
             break;
+        case 'st':
+            await interaction.reply(`賣慌 還沒開發`);
+            break;
         case '歐洛拉':
             await interaction.reply('https://youtu.be/h01SK7_VdXE');
+            break;
+        case 'csgo':
+            var msg = await interaction.reply({
+                content: "你名義保鑣在你後面 他非常火",
+                fetchReply: true
+            });
+
+            var userId1 = '155907076122607616';
+            var userId2 = '123809168539779072';
+            var mentionOptions = {
+                users: [userId1, userId2]
+            }
+            await interaction.editReply(`<@${userId1}> <@${userId2}> 保鑣上工`, { allowMentions: mentionOptions });
+            break;
+        case 'hltv':
+            var msg = await interaction.reply({
+                content: "又想送菜啦😁",
+                fetchReply: true
+            });
+
+            var response = await fetch('https://www.hltv.org/matches');
+            var html = await response.text();
+            var $ = cheerio.load(html);
+
+            var matches = [];
+            $('.upcomingMatchesSection .upcomingMatch').each((i, el) => {
+                var stars = 5 - $(el).find('a .matchInfo .matchRating .faded').length;
+                if (stars >= 1) {
+                    var teamA = $(el).find('a .matchTeams .team1 .matchTeamName').text().trim();
+                    var teamB = $(el).find('a .matchTeams .team2 .matchTeamName').text().trim();
+                    if (teamA == '' || teamB == '') {
+                        teamA = 'TBD';
+                        teamB = 'TBD';
+                    }
+                    var dateStr = $(el).parent().find('.matchDayHeadline').text().trim();
+                    var date = dateStr.match(/\d{4}-\d{2}-\d{2}/);
+                    var time = $(el).find('a .matchInfo .matchTime').text().trim();
+                    var bestOf = $(el).find('a .matchInfo .matchMeta').text().trim();
+                    var event = $(el).find('a .matchEvent .matchEventName').text().trim();
+                    var match = {
+                        teamA,
+                        teamB,
+                        date,
+                        time,
+                        bestOf,
+                        stars,
+                        event,
+                    };
+                    matches.push(match);
+                }
+            });
+
+            var topMatches = matches.slice(0, 10);
+
+            if (topMatches.length === 0) {
+                await interaction.editReply('沒有1星以上的比賽');
+                return;
+            }
+
+            var replyContent = '';
+            topMatches.forEach(match => {
+                switch (match.stars) {
+                    case 1:
+                        match.stars = '★☆☆☆☆';
+                        break;
+                    case 2:
+                        match.stars = '★★☆☆☆';
+                        break;
+                    case 3:
+                        match.stars = '★★★☆☆';
+                        break;
+                    case 4:
+                        match.stars = '★★★★☆';
+                        break;
+                    case 5:
+                        match.stars = '★★★★★';
+                        break;
+                }
+
+                var dateTime = moment.tz(`${match.date} ${match.time}`, 'YYYY-MM-DD HH:mm', 'Europe/Copenhagen')
+                    .tz('Asia/Taipei')
+                    .format('MM/DD HHmm');
+                replyContent += `${dateTime}  |  ${match.bestOf} ${match.stars}  |  **${match.teamA}**  vs  **${match.teamB}** \n`;
+            });
+
+            await interaction.editReply(replyContent);
             break;
         default:
             await interaction.reply(`等等呢亲，正在玩丁丁`);
@@ -75,4 +165,5 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+//login
 client.login(token);
